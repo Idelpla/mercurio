@@ -1,2 +1,2 @@
-# mercurio
+# Mercurio
 Purchase system 
