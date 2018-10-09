@@ -1,7 +1,7 @@
 from .base import *
 
 # Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
+# See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'c9)qu%-37v%73d9ie1*2j9u#81+h1x%6vlr9k5hhv#fpm#$#u_'
@@ -12,7 +12,7 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 # Database
-# https://docs.djangoproject.com/en/1.11/ref/settings/#databases
+# https://docs.djangoproject.com/en/2.1/ref/settings/#databases
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
