@@ -21,7 +21,6 @@ class LoginTest(TestCase):
     def test_get_context_data(self):
         response = self.client.get(reverse('users:login'))
         self.assertIsNotNone(response.context['title'])
-        self.assertIsNotNone(response.context['form_helper'])
 
 
 class DashboardTest(LoggedInTestCase):
