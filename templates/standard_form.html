@@ -5,5 +5,9 @@
 
 {% block body %}
     <h1>{{ title }}</h1>
-    {% crispy form form_helper %}
+    {% if form.helper %}
+        {% crispy form form.helper %}
+    {% else %}
+        {% crispy form form_helper %}
+    {% endif %}
 {% endblock %}

@@ -5,20 +5,16 @@ from django.urls import reverse
 
 class LoggedInTestCase(TestCase):
     def setUp(self):
-        get_user_model().objects.create_user(username='Ted', password='a-super-secret-password')
+        self.user = get_user_model().objects.create_user(username='Ted',
+                                                         password='a-super-secret-password',
+                                                         first_name='Ted',
+                                                         last_name='Mosby',)
         self.client.login(username='Ted', password='a-super-secret-password')
-
-
-class DashboardTest(LoggedInTestCase):
-
-    def test_uses_dashboard_template(self):
-        response = self.client.get(reverse('users:dashboard'))
-        self.assertTemplateUsed(response, 'user/dashboard.html')
 
 
 class LoginTest(TestCase):
 
-    def test_uses_login_template(self):
+    def test_uses_proper_template(self):
         response = self.client.get(reverse('users:login'))
         self.assertTemplateUsed(response, 'standard_form.html')
 
@@ -26,3 +22,25 @@ class LoginTest(TestCase):
         response = self.client.get(reverse('users:login'))
         self.assertIsNotNone(response.context['title'])
         self.assertIsNotNone(response.context['form_helper'])
+
+
+class DashboardTest(LoggedInTestCase):
+
+    def test_uses_proper_template(self):
+        response = self.client.get(reverse('users:dashboard'))
+        self.assertTemplateUsed(response, 'user/dashboard.html')
+
+
+class ElectronicAddress(LoggedInTestCase):
+
+    def test_get_object(self):
+        response = self.client.get(reverse('users:electronic_address'))
+        self.assertEquals(response.context['object'], self.user)
+
+    def test_uses_proper_template(self):
+        response = self.client.get(reverse('users:electronic_address'))
+        self.assertTemplateUsed(response, 'standard_form.html')
+
+    def test_success_url(self):
+        response = self.client.post(reverse('users:electronic_address'))
+        self.assertRedirects(response, reverse('users:dashboard'))

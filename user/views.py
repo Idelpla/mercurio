@@ -1,7 +1,12 @@
-from django.views.generic import TemplateView
+from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView
-from .forms import LoginFormHelper
+from django.views.generic import TemplateView, UpdateView
+
+from .forms import LoginFormHelper, ElectronicAddressForm
+from django.urls import reverse_lazy
+
+User = get_user_model()
 
 
 class Dashboard(LoginRequiredMixin, TemplateView):
@@ -16,3 +21,15 @@ class Login(LoginView):
         context['title'] = 'Login'
         context['form_helper'] = LoginFormHelper()
         return context
+
+
+class ElectronicAddress(LoginRequiredMixin, UpdateView):
+    model = User
+    form_class = ElectronicAddressForm
+    template_name = 'standard_form.html'
+    success_url = reverse_lazy('users:dashboard')
+
+    def get_object(self, queryset=None):
+        self.kwargs['pk'] = self.request.user.pk
+        return super(ElectronicAddress, self).get_object(queryset)
+

@@ -4,4 +4,6 @@
 
 {% block body %}
 <h1>Wellcome to your Dashboard</h1>
+    <p>Add you electronic address <a href="{% url 'users:electronic_address' %}">here</a></p>
+    <p>{{ request.user.electronic_address }}</p>
 {% endblock body %}
