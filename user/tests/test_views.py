@@ -14,9 +14,9 @@ class LoggedInTestCase(TestCase):
 
 class LoginTest(TestCase):
 
-    def test_uses_proper_template(self):
+    def test_url(self):
         response = self.client.get(reverse('users:login'))
-        self.assertTemplateUsed(response, 'standard_form.html')
+        self.assertEquals(response.status_code, 200)
 
     def test_get_context_data(self):
         response = self.client.get(reverse('users:login'))
@@ -25,21 +25,17 @@ class LoginTest(TestCase):
 
 class DashboardTest(LoggedInTestCase):
 
-    def test_uses_proper_template(self):
+    def test_url(self):
         response = self.client.get(reverse('users:dashboard'))
-        self.assertTemplateUsed(response, 'user/dashboard.html')
+        self.assertEquals(response.status_code, 200)
 
 
-class ElectronicAddress(LoggedInTestCase):
+class ElectronicAddressTest(LoggedInTestCase):
+
+    def test_url(self):
+        response = self.client.get(reverse('users:electronic_address'))
+        self.assertEquals(response.status_code, 200)
 
     def test_get_object(self):
         response = self.client.get(reverse('users:electronic_address'))
         self.assertEquals(response.context['object'], self.user)
-
-    def test_uses_proper_template(self):
-        response = self.client.get(reverse('users:electronic_address'))
-        self.assertTemplateUsed(response, 'standard_form.html')
-
-    def test_success_url(self):
-        response = self.client.post(reverse('users:electronic_address'))
-        self.assertRedirects(response, reverse('users:dashboard'))
