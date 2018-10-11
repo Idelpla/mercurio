@@ -1,7 +1,8 @@
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Field, Div, Submit
-from django import forms
 from django.contrib.auth import get_user_model
+
+from core.forms import ModelFormBase
 
 User = get_user_model()
 
@@ -16,19 +17,9 @@ class LoginFormHelper(FormHelper):
     )
 
 
-class ElectronicAddressForm(forms.ModelForm):
+class ElectronicAddressForm(ModelFormBase):
     class Meta:
         model = User
         fields = (
             'electronic_address',
         )
-
-    def __init__(self, *args, **kwargs):
-        super(ElectronicAddressForm, self).__init__(*args, **kwargs)
-        self.helper = FormHelper()
-        self.helper.layout = Layout()
-
-        for key in self.fields.keys():
-            self.helper.layout.fields.append(Field(key))
-
-        self.helper.layout.fields.append(Div(Submit('submit', 'Submit'),))

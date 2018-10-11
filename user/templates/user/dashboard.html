@@ -6,7 +6,7 @@
     <h1>Dashboard</h1>
     <div>
         <a href="{% url 'users:electronic_address' %}">Electronic Address</a>
-        <a href="#">Statements</a>
+        <a href="{% url 'statements:list' %}">Statements</a>
     </div>
     <div>
         <p>{{ request.user.electronic_address }}</p>

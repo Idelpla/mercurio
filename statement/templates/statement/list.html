@@ -1,0 +1,19 @@
+{% extends '_layouts/base.html' %}
+
+{% block title %}Your Statments{% endblock title %}
+
+{% block body %}
+    <h1>Your Statements</h1>
+    <a href="{% url 'statements:new' %}">New Statement</a>
+    <table>
+        {% for statement in statements %}
+            <tr>
+                <td></td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td>No statements found.</td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endblock body %}

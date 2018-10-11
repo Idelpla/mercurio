@@ -3,15 +3,6 @@ from django.test import TestCase
 from django.urls import reverse
 
 
-class LoggedInTestCase(TestCase):
-    def setUp(self):
-        self.user = get_user_model().objects.create_user(username='Ted',
-                                                         password='a-super-secret-password',
-                                                         first_name='Ted',
-                                                         last_name='Mosby',)
-        self.client.login(username='Ted', password='a-super-secret-password')
-
-
 class LoginTest(TestCase):
 
     def test_url(self):
@@ -23,14 +14,20 @@ class LoginTest(TestCase):
         self.assertIsNotNone(response.context['title'])
 
 
-class DashboardTest(LoggedInTestCase):
+class DashboardTest(TestCase):
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(username='Ted', password='a-super-secret-password')
+        self.client.login(username='Ted', password='a-super-secret-password')
 
     def test_url(self):
         response = self.client.get(reverse('users:dashboard'))
         self.assertEquals(response.status_code, 200)
 
 
-class ElectronicAddressTest(LoggedInTestCase):
+class ElectronicAddressTest(TestCase):
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(username='Ted', password='a-super-secret-password')
+        self.client.login(username='Ted', password='a-super-secret-password')
 
     def test_url(self):
         response = self.client.get(reverse('users:electronic_address'))
