@@ -5,7 +5,10 @@
 {% block body %}
     <h1>Dashboard</h1>
     <div>
-        <p>Manage your <a href="{% url 'users:electronic_address' %}">electronic address</a></p>
+        <a href="{% url 'users:electronic_address' %}">Electronic Address</a>
+        <a href="#">Statements</a>
+    </div>
+    <div>
         <p>{{ request.user.electronic_address }}</p>
     </div>
 {% endblock body %}
