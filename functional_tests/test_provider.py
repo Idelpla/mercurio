@@ -1,11 +1,30 @@
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 
+from tax.models import FiscalPosition, Activity
+from statement.models import Statement
 from .base import FunctionalTest
+
+from selenium.webdriver.support.ui import Select
+from random import randint
 
 
 class ProviderTest(FunctionalTest):
     def setUp(self):
+        # Dummy objects
+        for i in range(5):
+            FiscalPosition.objects.create(name='Fiscal Position ' + str(i + 1))
+            Activity.objects.create(name='Activity' + str(i + 1))
+
+        for u in range(3):
+            user = get_user_model().objects.create_user(username='Dummy ' + str(u + 1), password='a-dummy-password')
+
+            for i in range(10):
+                Statement.objects.create(year=2018,
+                                         fiscal_position_id=randint(1, 5),
+                                         activity_id=randint(1, 5),
+                                         owner=user, )
+
         get_user_model().objects.create_user(username='Ted', password='a-super-secret-password')
         return super(ProviderTest, self).setUp()
 
@@ -38,7 +57,7 @@ class ProviderTest(FunctionalTest):
         # He sees his correct electronic address in the Dashboard
         self.assertIn('ted@myemail.com', self.browser.find_element_by_tag_name('body').text)
 
-    def test_statements(self):
+    def test_new_statement(self):
         self.login('Ted', 'a-super-secret-password', 'users:dashboard')
 
         # Ted notices a link to see his statements as provider. He want to take a look so he clicks it and is redirected
@@ -51,4 +70,21 @@ class ProviderTest(FunctionalTest):
         self.browser.find_element_by_link_text('New Statement').click()
         self.wait_for(lambda: self.assertIn(reverse('statements:new'), self.browser.current_url))
 
-        self.fail('Keep writing test')
+        self.browser.find_element_by_name('year').send_keys('2018')
+        Select(self.browser.find_element_by_name('fiscal_position')).select_by_value('1')
+        Select(self.browser.find_element_by_name('activity')).select_by_value('1')
+        self.browser.find_element_by_class_name('btn').click()
+
+        # Ted is redirected to a page where he can see the detail of his statement
+        teds_statement = Statement.objects.last()
+        self.wait_for(lambda: self.assertIn(reverse('statements:detail', kwargs={'pk': teds_statement.pk}), self.browser.current_url))
+        self.assertIn('Statement object ({})'.format(teds_statement.pk), self.browser.find_element_by_tag_name('body').text)
+
+    # def test_cant_see_other_owner_statement(self):
+    #     other_user_statement = Statement.objects.filter(owner_id=2).first()
+    #     self.login('Dummy 1', 'a-dummy-password', 'statements:list')
+    #
+    #     self.browser.get(self.live_server_url + reverse('statements:detail', kwargs={'pk': other_user_statement.pk}))
+    #     self.wait_for(lambda: self.assertIn(reverse('statements:detail', kwargs={'pk': other_user_statement.pk}), self.browser.current_url))
+    #     self.assertIn('Statement object ({})'.format(other_user_statement.pk), self.browser.find_element_by_tag_name('body').text)
+
