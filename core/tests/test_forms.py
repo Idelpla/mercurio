@@ -1,14 +1,16 @@
-from django.test import TestCase
-from ..forms import ModelFormBase
 from crispy_forms.helper import FormHelper
+from django.contrib.auth import get_user_model
+from django.test import TestCase
 
-from account.models import Account
+from ..forms import ModelFormBase
 
-# TODO How to use a mock to avoid import of another app?
+User = get_user_model()
+
+
 class DummyForm(ModelFormBase):
     class Meta:
-        model = Account
-        fields = ('name',)
+        model = User
+        fields = ('username', 'email',)
 
 
 class ModelFormBaseTest(TestCase):
