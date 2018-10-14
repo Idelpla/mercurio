@@ -11,3 +11,8 @@ class Statement(models.Model):
     year = models.SmallIntegerField(verbose_name=_('year'))
     fiscal_position = models.ForeignKey(FiscalPosition, verbose_name=_('fiscal position'), on_delete=models.PROTECT, related_name='+')
     activity = models.ForeignKey(Activity, verbose_name=_('activity'), on_delete=models.PROTECT, related_name='+')
+
+
+class Attachment(models.Model):
+    statement = models.ForeignKey(Statement, verbose_name=_('statement'), on_delete=models.CASCADE, related_name='attachments')
+    attachment = models.FileField(verbose_name=_('attachment'))

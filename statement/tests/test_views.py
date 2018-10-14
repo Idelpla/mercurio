@@ -9,6 +9,8 @@ from ..models import Statement
 
 from django.db.models import Max
 
+from ..forms import AttachmentFormSet, AttachmentFormSetHelper, StatementForm
+
 
 def preload_dummy_objects():
     """Creates dummy objects so the tests can have some base data to work with."""
@@ -61,11 +63,20 @@ class StatementNewTest(TestCase):
         response = self.client.get(reverse('statements:new'))
         self.assertEquals(response.status_code, 200)
 
-    def test_form_valid(self):
-        self.client.post(reverse('statements:new'), data={'year': 2018,
-                                                          'fiscal_position': ['1'],
-                                                          'activity': ['1'], })
+    def test_get_context_data(self):
+        response = self.client.get(reverse('statements:new'))
+        self.assertIsInstance(response.context['formset'], AttachmentFormSet)
+        self.assertIsInstance(response.context['formset_helper'], AttachmentFormSetHelper)
 
+    def test_post(self):
+        self.fail('Write me')
+
+    def test_form_valid(self):
+        response = self.client.post(reverse('statements:new'), data={'year': 2018,
+                                                                     'fiscal_position': ['1'],
+                                                                     'activity': ['1'], })
+
+        # self.assertIsInstance(response.context['form'], StatementForm)
         self.assertEquals(Statement.objects.filter(owner=self.user).exists(), True)
 
     def test_get_success_url(self):

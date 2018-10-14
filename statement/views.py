@@ -2,8 +2,10 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView, CreateView, DetailView
 from django.urls import reverse_lazy
 
-from .forms import StatementForm
+from .forms import StatementForm, AttachmentFormSet, AttachmentFormSetHelper
 from .models import Statement
+
+from django.http import HttpResponseRedirect
 
 
 class StatementList(LoginRequiredMixin, ListView):
@@ -20,9 +22,16 @@ class StatementNew(LoginRequiredMixin, CreateView):
     form_class = StatementForm
     template_name = 'standard_form.html'
 
+    def get_context_data(self, **kwargs):
+        context = super(StatementNew, self).get_context_data(**kwargs)
+        context['formset'] = AttachmentFormSet()
+        context['formset_helper'] = AttachmentFormSetHelper()
+        return context
+
     def form_valid(self, form):
         form.instance.owner = self.request.user
-        return super(StatementNew, self).form_valid(form)
+        self.object = form.save()
+        return HttpResponseRedirect(self.get_success_url())
 
     def get_success_url(self):
         return reverse_lazy('statements:detail', kwargs={'pk': self.object.pk})
