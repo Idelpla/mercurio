@@ -84,6 +84,36 @@ class ProviderTest(FunctionalTest):
         self.wait_for(lambda: self.assertIn(reverse('statements:detail', kwargs={'pk': teds_statement.pk}), self.browser.current_url))
         self.assertIn('Statement object ({})'.format(teds_statement.pk), self.browser.find_element_by_tag_name('body').text)
 
+        # Ted adds attachments to his statement.
+        self.browser.find_element_by_link_text('New Attachment').click()
+        self.wait_for(lambda: self.assertIn('Select file to attach', self.browser.find_element_by_tag_name('body').text))
+        self.browser.find_element_by_name('attachment').send_keys('path/to/file')
+        self.browser.find_element_by_link_text('Submit').click()
+
+        # Ted sees his recent attachment in his statement
+        self.wait_for(lambda: self.assertIn(reverse('statements:detail', kwargs={'pk': teds_statement.pk}), self.browser.current_url))
+        self.wait_for(lambda: self.assertIn('name/of/attached/file', self.browser.find_element_by_tag_name('body').text))
+
+        # Ted adds a second attachments to his statement.
+        self.browser.find_element_by_link_text('New Attachment').click()
+        self.wait_for(lambda: self.assertIn('Select file to attach', self.browser.find_element_by_tag_name('body').text))
+        self.browser.find_element_by_name('attachment').send_keys('path/to/file/2')
+        self.browser.find_element_by_link_text('Submit').click()
+
+        # Ted sees his two attachments in his statement
+        self.wait_for(lambda: self.assertIn(reverse('statements:detail', kwargs={'pk': teds_statement.pk}), self.browser.current_url))
+        self.wait_for(lambda: self.assertIn('name/of/attached/file', self.browser.find_element_by_tag_name('body').text))
+        self.wait_for(lambda: self.assertIn('name/of/attached/file2', self.browser.find_element_by_tag_name('body').text))
+
+        # As Ted is sure he has added all the attachments, he finishes his statement.
+        self.browser.find_element_by_link_text('Close').click()
+        self.wait_for(lambda: self.assertIn('Are you sure you want to close your statement?', self.browser.find_element_by_tag_name('body').text))
+        self.browser.find_element_by_link_text('Close').click()
+
+        # Ted is redirected to his list of statements
+        self.wait_for(lambda: self.assertIn(reverse('statements:list'), self.browser.current_url))
+
+
     def test_cant_see_other_owner_statement(self):
         other_user_statement = Statement.objects.filter(owner__username='Dummy 2').first()
 
@@ -91,6 +121,5 @@ class ProviderTest(FunctionalTest):
 
         self.browser.get(self.live_server_url + reverse('statements:detail', kwargs={'pk': other_user_statement.pk}))
         self.wait_for(lambda: self.assertIn(reverse('statements:detail', kwargs={'pk': other_user_statement.pk}), self.browser.current_url))
-        self.assertIn('Statement object ({})'.format(other_user_statement.pk), self.browser.find_element_by_tag_name('body').text)
-        self.fail('Write expected message.')
+        self.assertIn('You are not the owner of this statement'.format(other_user_statement.pk), self.browser.find_element_by_tag_name('body').text)
 
