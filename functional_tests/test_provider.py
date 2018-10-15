@@ -67,10 +67,10 @@ class ProviderTest(FunctionalTest):
         # Ted notices a link to see his statements as provider. He want to take a look so he clicks it and is redirected
         # to a new page.
         self.browser.find_element_by_link_text('Statements').click()
-        self.wait_for(lambda: self.assertIn(reverse('statements:list'), self.browser.current_url))
+        self.wait_for(lambda: self.assertIn('Your Statements', self.browser.find_element_by_tag_name('body').text))
 
         # Ted sees he has no statements so he decides to create one.
-        self.wait_for(lambda: self.assertIn('No statements found.', self.browser.find_element_by_tag_name('body').text))
+        self.assertIn('No statements found.', self.browser.find_element_by_tag_name('body').text)
         self.browser.find_element_by_link_text('New Statement').click()
         self.wait_for(lambda: self.assertIn(reverse('statements:new'), self.browser.current_url))
 
@@ -81,9 +81,11 @@ class ProviderTest(FunctionalTest):
         self.browser.find_element_by_name('submit').click()
 
         # Ted is redirected to a page where he can see the detail of his statement
-        teds_statement = Statement.objects.last()
-        self.wait_for(lambda: self.assertIn(reverse('statements:detail', kwargs={'pk': teds_statement.pk}), self.browser.current_url))
-        self.assertIn('Statement object ({})'.format(teds_statement.pk), self.browser.find_element_by_tag_name('body').text)
+        self.wait_for(lambda: self.assertIn('Statement object', self.browser.find_element_by_tag_name('body').text))
+        self.assertIn('2018', self.browser.find_element_by_tag_name('body').text)
+        self.assertIn('Fiscal Position 1', self.browser.find_element_by_tag_name('body').text)
+        self.assertIn('Activity 1', self.browser.find_element_by_tag_name('body').text)
+        self.assertIn('crs.txt', self.browser.find_element_by_tag_name('body').text)
 
         # Ted adds attachments to his statement.
         # self.browser.find_element_by_link_text('New Attachment').click()

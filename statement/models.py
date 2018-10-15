@@ -15,4 +15,4 @@ class Statement(models.Model):
 
 class Attachment(models.Model):
     statement = models.ForeignKey(Statement, verbose_name=_('statement'), on_delete=models.CASCADE, related_name='attachments')
-    attachment = models.FileField(verbose_name=_('attachment'))
+    attachment = models.FileField(verbose_name=_('attachment'), upload_to='attachments')

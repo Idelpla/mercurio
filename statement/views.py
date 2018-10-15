@@ -28,10 +28,25 @@ class StatementNew(LoginRequiredMixin, CreateView):
         context['formset_helper'] = AttachmentFormSetHelper()
         return context
 
-    def form_valid(self, form):
+    def post(self, request, *args, **kwargs):
+        self.object = None
+        form = self.get_form()
+        formset = AttachmentFormSet(self.request.POST, self.request.FILES)
+        if form.is_valid() and formset.is_valid():
+            return self.form_valid(form, formset)
+        else:
+            return self.form_invalid(form, formset)
+
+    def form_valid(self, form, formset):
         form.instance.owner = self.request.user
         self.object = form.save()
+        formset.instance = self.object
+        formset.save()
         return HttpResponseRedirect(self.get_success_url())
+
+    def form_invalid(self, form, formset):
+        helper = AttachmentFormSetHelper()
+        return self.render_to_response(self.get_context_data(form=form, formset=formset, formset_helper=helper))
 
     def get_success_url(self):
         return reverse_lazy('statements:detail', kwargs={'pk': self.object.pk})

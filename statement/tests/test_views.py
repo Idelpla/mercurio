@@ -18,7 +18,7 @@ def preload_dummy_objects():
     # 5 dummy objects for FiscalPosition, Activity
     for i in range(5):
         FiscalPosition.objects.create(name='Fiscal Position ' + str(i + 1))
-        Activity.objects.create(name='Activity' + str(i + 1))
+        Activity.objects.create(name='Activity ' + str(i + 1))
 
     # 2 dummy User and 10 Statements for each one with random FiscalPosition and Activity
     for u in range(3):
@@ -37,11 +37,7 @@ class StatementListTest(TestCase):
         self.user = get_user_model().objects.create_user(username='Ted', password='a-super-secret-password')
         self.client.login(username='Ted', password='a-super-secret-password')
 
-    def test_url(self):
-        response = self.client.get(reverse('statements:list'))
-        self.assertEquals(response.status_code, 200)
-
-    def test_get_queryset(self):
+    def test_get(self):
         # 2 more dummy statements for the logged in user
         for i in range(2):
             Statement.objects.create(year=2018,
@@ -50,6 +46,8 @@ class StatementListTest(TestCase):
                                      owner=self.user)
 
         response = self.client.get(reverse('statements:list'))
+        self.assertEquals(response.status_code, 200)
+        self.assertTemplateUsed(response, 'statement/list.html')
         self.assertEquals(response.context['statements'].count(), 2)
 
 
@@ -59,33 +57,37 @@ class StatementNewTest(TestCase):
         self.user = get_user_model().objects.create_user(username='Ted', password='a-super-secret-password')
         self.client.login(username='Ted', password='a-super-secret-password')
 
-    def test_url(self):
+    def test_get(self):
         response = self.client.get(reverse('statements:new'))
         self.assertEquals(response.status_code, 200)
-
-    def test_get_context_data(self):
-        response = self.client.get(reverse('statements:new'))
+        self.assertTemplateUsed(response, 'standard_form.html')
+        self.assertIsInstance(response.context['form'], StatementForm)
         self.assertIsInstance(response.context['formset'], AttachmentFormSet)
         self.assertIsInstance(response.context['formset_helper'], AttachmentFormSetHelper)
 
     def test_post(self):
-        self.fail('Write me')
+        with open('/home/santiago/Descargas/crs.txt') as fp:
+            response = self.client.post(reverse('statements:new'), data={'year': 2018,
+                                                                         'fiscal_position': ['1'],
+                                                                         'activity': ['1'],
+                                                                         'attachments-0-DELETE': [''],
+                                                                         'attachments-0-attachment': fp,
+                                                                         'attachments-0-id': [''],
+                                                                         'attachments-0-statement': [''],
+                                                                         'attachments-INITIAL_FORMS': ['0'],
+                                                                         'attachments-MAX_NUM_FORMS': ['1000'],
+                                                                         'attachments-MIN_NUM_FORMS': ['0'],
+                                                                         'attachments-TOTAL_FORMS': ['1'],
+                                                                         })
 
-    def test_form_valid(self):
-        response = self.client.post(reverse('statements:new'), data={'year': 2018,
-                                                                     'fiscal_position': ['1'],
-                                                                     'activity': ['1'], })
+        new_statement = Statement.objects.filter(owner=self.user).select_related('fiscal_position', 'activity').last()
+        self.assertEquals(new_statement.year, 2018)
+        self.assertEquals(new_statement.fiscal_position.name, 'Fiscal Position 1')
+        self.assertEquals(new_statement.activity.name, 'Activity 1')
 
-        # self.assertIsInstance(response.context['form'], StatementForm)
-        self.assertEquals(Statement.objects.filter(owner=self.user).exists(), True)
+        self.assertEquals(new_statement.attachments.exists(), True)
 
-    def test_get_success_url(self):
-        response = self.client.post(reverse('statements:new'), data={'year': 2018,
-                                                                     'fiscal_position': ['1'],
-                                                                     'activity': ['1'], })
-
-        new_statement_id = Statement.objects.aggregate(id=Max('id'))['id']
-        self.assertRedirects(response, reverse('statements:detail', kwargs={'pk': new_statement_id}))
+        self.assertRedirects(response, reverse('statements:detail', kwargs={'pk': new_statement.pk}))
 
 
 class StatementDetailTest(TestCase):

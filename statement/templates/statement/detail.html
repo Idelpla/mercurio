@@ -5,5 +5,14 @@
 {% block body %}
     <h1>Statement</h1>
     <p>{{ statement }}</p>
-    <a href="">New Attachment</a>
+    <p>{{ statement.year }}</p>
+    <p>{{ statement.fiscal_position }}</p>
+    <p>{{ statement.activity }}</p>
+    <p>Attachments</p>
+    <ul>
+    {% for attachment in statement.attachments.all %}
+        <li>{{ attachment }}</li>
+    {% endfor %}
+    </ul>
+
 {% endblock body %}
