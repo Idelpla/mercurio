@@ -1,3 +1,4 @@
+import os
 from random import randint
 
 from django.contrib.auth import get_user_model
@@ -5,11 +6,10 @@ from django.test import TestCase
 from django.urls import reverse
 
 from tax.models import FiscalPosition, Activity
+from ..forms import AttachmentFormSet, AttachmentFormSetHelper, StatementForm
 from ..models import Statement
 
-from django.db.models import Max
-
-from ..forms import AttachmentFormSet, AttachmentFormSetHelper, StatementForm
+SCRIPT_DIR = os.path.dirname(__file__)
 
 
 def preload_dummy_objects():
@@ -66,7 +66,7 @@ class StatementNewTest(TestCase):
         self.assertIsInstance(response.context['formset_helper'], AttachmentFormSetHelper)
 
     def test_post(self):
-        with open('/home/santiago/Descargas/crs.txt') as fp:
+        with open(os.path.join(SCRIPT_DIR, 'attachments/dummy_attachment.txt')) as fp:
             response = self.client.post(reverse('statements:new'), data={'year': 2018,
                                                                          'fiscal_position': ['1'],
                                                                          'activity': ['1'],
@@ -85,7 +85,8 @@ class StatementNewTest(TestCase):
         self.assertEquals(new_statement.fiscal_position.name, 'Fiscal Position 1')
         self.assertEquals(new_statement.activity.name, 'Activity 1')
 
-        self.assertEquals(new_statement.attachments.exists(), True)
+        attachment = new_statement.attachments.all().first()
+        self.assertIn('dummy_attachment', attachment.attachment.name)
 
         self.assertRedirects(response, reverse('statements:detail', kwargs={'pk': new_statement.pk}))
 
@@ -96,5 +97,6 @@ class StatementDetailTest(TestCase):
         self.client.login(username='Dummy 1', password='a-dummy-password')
 
     def test_url(self):
-        response = self.client.get(reverse('statements:detail', kwargs={'pk': 1}))
-        self.assertEquals(response.status_code, 200)
+        other_owner_statement = Statement.objects.filter(owner__username='Dummy 2').first().pk
+        response = self.client.get(reverse('statements:detail', kwargs={'pk': other_owner_statement}))
+        self.assertEquals(response.status_code, 403)

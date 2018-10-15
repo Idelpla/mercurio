@@ -7,6 +7,8 @@ from .models import Statement
 
 from django.http import HttpResponseRedirect
 
+from django.core.exceptions import PermissionDenied
+
 
 class StatementList(LoginRequiredMixin, ListView):
     model = Statement
@@ -55,3 +57,10 @@ class StatementNew(LoginRequiredMixin, CreateView):
 class StatementDetail(LoginRequiredMixin, DetailView):
     model = Statement
     template_name = 'statement/detail.html'
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if self.object.owner != self.request.user:
+            raise PermissionDenied
+        context = self.get_context_data(object=self.object)
+        return self.render_to_response(context)
